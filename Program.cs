@@ -1,49 +1,78 @@
-﻿using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using DotNetEnv;
-using ProxyServerAndCrawlerDemo;
+﻿using DotNetEnv;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using practice.db;
-using practice.entities;
+using practice.proxy;
+using practice.parsers;
 
-class Program
+namespace practice
 {
-    public static async Task Main(string[] args)
+
+    class Program
     {
-        Env.Load();
-
-        var mongoDbService = new MongoDbService(MongoDBConnection.Database);
-
-        // Path to your proxy list file
-        var proxyFile = "public/proxy/proxies.txt";
-        string[] proxies = File.Exists(proxyFile)
-            ? await File.ReadAllLinesAsync(proxyFile)
-            : [];
-
-        var proxyRotator = new ProxyRotator(proxies);
-
-        string dictionaryUrl = "https://www.dictionary.com/browse/precipitate";
-
-        var dictionaryFetcher = new DictionaryFetcher(proxyRotator);
-
-        using var cts = new CancellationTokenSource();
-        try
+        public static async Task Main(string[] args)
         {
-            // Attempt to fetch and parse the word card
-            WordCard wordCard = await dictionaryFetcher.FetchWordHTMLAsync(dictionaryUrl, cts.Token);
-            Console.WriteLine("Parsed Word Card:");
-            Console.WriteLine($"Headword: {wordCard.Headword}");
+            // Завантаження змінних середовища
+            Env.Load();
 
-            // Save the WordCard to the MongoDB database
-            await mongoDbService.InsertWordCardAsync(wordCard);
-            Console.WriteLine($"Word card for '{wordCard.Headword}' saved to the database.");
+            // Налаштування DI-контейнера
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Отримання екземпляра основного застосунку та запуск
+            var app = serviceProvider.GetRequiredService<App>();
+
+            using var cts = new CancellationTokenSource();
+            await serviceProvider.GetRequiredService<App>().RunAsync(cts.Token).ConfigureAwait(false);
         }
-        catch (Exception ex)
+
+        private static void ConfigureServices(IServiceCollection services)
         {
-            Console.WriteLine("Error fetching or saving word card: " + ex.Message);
+            string outputFile = "public/proxy/proxies.txt";
+            string progressFile = "public/proxy/progress.txt";
+
+            services.AddSingleton(outputFile); // Registering outputFile as a service
+            services.AddSingleton(progressFile); // Registering progressFile as a service
+
+            // Налаштування логування
+            services.AddLogging(config =>
+            {
+                config.AddConsole();
+                config.SetMinimumLevel(LogLevel.Information);
+            });
+            services.AddSingleton(sp =>
+                           new ProxyUpdater(
+                               sp.GetRequiredService<ProxyCrawler>(),
+                               sp.GetRequiredService<ProxyChecker>(),
+                               sp.GetRequiredService<ProxyRotator>(),
+                               outputFile,
+                               sp.GetRequiredService<ILogger<ProxyUpdater>>()
+                           ));
+
+            // Реєстрація сервісів проксі
+            services.AddSingleton<ProxyCrawler>();
+            services.AddSingleton<ProxyChecker>();
+
+            // Реєстрація MongoDB-сервісу (припускаємо, що MongoDBConnection.Database налаштовано)
+            services.AddSingleton(sp =>
+                new MongoDbService(MongoDBConnection.Database));
+
+
+
+            // Завантаження початкового списку проксі з файлу (якщо файл існує)
+            string proxyFile = "public/proxy/proxies.txt";
+            string[] initialProxies = File.Exists(proxyFile) ? File.ReadAllLines(proxyFile) : Array.Empty<string>();
+            services.AddSingleton(sp =>
+                new ProxyRotator(initialProxies, sp.GetRequiredService<ILogger<ProxyRotator>>()));
+
+
+
+            // Реєстрація DictionaryFetcher (він тепер приймає ILogger<DictionaryFetcher>)
+            services.AddSingleton<DictionaryFetcher>();
+
+            // Основний клас застосунку
+            services.AddTransient<App>();
         }
     }
 }

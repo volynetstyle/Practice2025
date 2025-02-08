@@ -17,7 +17,7 @@ public class DictionaryParser
     private const string AntonymsXPath = ".//p[@class='OsvsNC770LPFqkTe32Ng']/a[starts-with(@data-linkname, 'view-antonyms')]";
     private const string AdditionalSectionsXPath = ".//div[contains(@class, 'YommMxopETPCP_wzxPxE')]";
 
-    public static WordCard Parse(HtmlDocument html)
+    public  WordCard Parse(HtmlDocument html)
     {
         return new WordCard
         {

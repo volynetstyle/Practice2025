@@ -2,7 +2,7 @@ using MongoDB.Driver;
 
 namespace practice.db
 {
-    class MongoDbService
+    public class MongoDbService
     {
         private readonly IMongoDatabase _mongoDatabase;
         private readonly IMongoCollection<WordCard> _wordCardCollection;
@@ -46,3 +46,5 @@ namespace practice.db
         }
     }
 }
+
+
