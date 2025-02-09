@@ -116,35 +116,20 @@ public class DictionaryParser
             .Select(n => n.InnerText.Trim())
             .ToList() ?? [];
 
-    // private static List<AdditionalSection?> ParseAdditionalSections(HtmlNode node)
-    // {
-    //     return node.SelectNodes(AdditionalSectionsXPath)?
-    //         .Select(section => {
-    //             var title = section.SelectSingleNode(".//h2")?.InnerText.Trim();
-    //             return string.IsNullOrEmpty(title) 
-    //                 ? null 
-    //                 : new AdditionalSection {
-    //                     Title = title,
-    //                     Content = section.InnerText.Trim()
-    //                 };
-    //         })
-    //         .Where(section => section != null)
-    //         .ToList() ?? [];
-    // }
+
     public static List<AdditionalSection?> ParseAdditionalSections(HtmlNode sectionNode)
     {
-        var sectionResults = new List<AdditionalSection?>();  // Список для хранения результатов
+        var sectionResults = new List<AdditionalSection?>();  
         var paragraphs = sectionNode.SelectNodes(AdditionalSectionsXPath);
-        var contentBuilder = new StringBuilder();  // Строковый билдер для сбора контента
+        var contentBuilder = new StringBuilder(); 
 
-        var sectionResult = new AdditionalSection();  // Создаем новую секцию
+        var sectionResult = new AdditionalSection();  
 
-        // Извлечение параграфов и их ссылок
         if (paragraphs != null)
         {
             foreach (var paragraph in paragraphs)
             {
-                string paragraphText = paragraph.InnerText.Trim();  // Извлекаем текст абзаца
+                string paragraphText = paragraph.InnerText.Trim();  
                 contentBuilder.AppendLine(paragraphText);
 
                 // Извлечение ссылок
@@ -153,13 +138,12 @@ public class DictionaryParser
                 {
                     foreach (var link in links)
                     {
-                        contentBuilder.AppendLine($"Link: {link.Text}, URL: {link.Url}");  // Добавляем ссылки
+                        contentBuilder.AppendLine($"Link: {link.Text}, URL: {link.Url}");  
                     }
                 }
             }
         }
 
-        // Извлечение списка элементов (если есть)
         var listItems = sectionNode.SelectNodes(".//ul/li");
         if (listItems != null)
         {
@@ -177,18 +161,16 @@ public class DictionaryParser
             }
         }
 
-        sectionResult.Content = contentBuilder.ToString();  // Присваиваем собранный контент в модель
+        sectionResult.Content = contentBuilder.ToString();  
 
-        // Добавляем результат в список секций
         sectionResults.Add(sectionResult);
 
-        return sectionResults;  // Возвращаем список секций
+        return sectionResults;  
     }
 
-    // Вспомогательный метод для извлечения ссылок
     private static List<(string Text, string Url)> ExtractLinks(HtmlNode paragraphNode)
     {
-        var links = new List<(string Text, string Url)>();  // Список для ссылок
+        var links = new List<(string Text, string Url)>();  
 
         var linkNodes = paragraphNode.SelectNodes(".//a");
         if (linkNodes != null)

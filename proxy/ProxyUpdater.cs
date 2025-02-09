@@ -25,18 +25,15 @@ namespace practice.proxy
 
           foreach (var proxy in proxies)
           {
-            // Якщо Google перевірка потрібна – можна додатково перевірити, якщо proxy.Google == true
-            // Або завжди проводити тест доступу до Google:
+    
             if (await ProxyChecker.CheckProxyAsync(proxy, cancellationToken).ConfigureAwait(false))
             {
               workingProxies.Add(proxy.ToString());
             }
           }
 
-          // Оновлюємо проксі-ротатор з робочими проксі
           _rotator.UpdateProxies(workingProxies);
 
-          // Зберігаємо робочі проксі у файл
           await File.WriteAllLinesAsync(_outputFile, workingProxies, cancellationToken).ConfigureAwait(false);
           _logger.LogInformation("Proxy update cycle completed. {Count} working proxies saved.", workingProxies.Count);
         }

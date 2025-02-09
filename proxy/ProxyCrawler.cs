@@ -53,7 +53,6 @@ namespace practice.proxy
                   Https = cells[6].InnerText.Trim().Equals("yes", StringComparison.OrdinalIgnoreCase)
                 };
 
-                // Filter by HTTPS support
                 if (proxy.Https)
                 {
                   proxies.Add(proxy);
@@ -63,7 +62,6 @@ namespace practice.proxy
           }
         }
 
-        // Save proxies to file
         await File.WriteAllLinesAsync(_outputFile, proxies.ConvertAll(p => p.ToString()), cancellationToken);
         _logger.LogInformation($"Crawl completed. Saved {proxies.Count} proxies.");
       }

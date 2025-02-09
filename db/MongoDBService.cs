@@ -15,7 +15,6 @@ namespace practice.db
             _thesaurusCollection = _mongoDatabase.GetCollection<WordCard>("Thesaurus");
         }
 
-        // WordCard Methods
 
         public async Task<List<WordCard>> GetWordCardsAsync(FilterDefinition<WordCard> filter)
         {
@@ -29,7 +28,6 @@ namespace practice.db
 
         public async Task InsertWordCardAsync(WordCard wordCard)
         {
-            // Insert into both Dictionary and Thesaurus collections (if required)
             await _wordCardCollection.InsertOneAsync(wordCard);
             await _thesaurusCollection.InsertOneAsync(wordCard);
         }

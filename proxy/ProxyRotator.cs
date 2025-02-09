@@ -5,7 +5,7 @@ namespace practice.proxy
 {
   public class ProxyRotator(IEnumerable<string> proxies, ILogger<ProxyRotator> logger)
     {
-    private readonly List<string> _proxies = new List<string>(proxies);
+    private readonly List<string> _proxies = [.. proxies];
     private int _index = 0;
     private readonly object _lock = new object();
     private readonly ILogger<ProxyRotator> _logger = logger;
@@ -22,7 +22,6 @@ namespace practice.proxy
       }
     }
 
-    // Оновлення списку проксі новими робочими проксі
     public void UpdateProxies(IEnumerable<string> newProxies)
     {
       lock (_lock)

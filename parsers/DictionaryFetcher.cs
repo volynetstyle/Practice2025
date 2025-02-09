@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using practice.proxy;
-using practice.entities; // Припустимо, тут визначено WordCard
+using practice.entities; 
 
 namespace practice.parsers
 {
@@ -24,11 +24,11 @@ namespace practice.parsers
         /// <returns>A parsed WordCard instance.</returns>
         public async Task<WordCard> FetchWordHTMLAsync(string url, CancellationToken cancellationToken)
         {
-            const int maxAttempts = 10;
+            const int maxAttempts = 1;
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                var proxyUrl = _proxyRotator.GetNextProxy();
-                _logger.LogInformation("Attempt {Attempt} using proxy: {Proxy}", attempt, proxyUrl ?? "none");
+                var proxyUrl = "";
+                _logger.LogInformation("Attempt {Attempt} using proxy: {Proxy}", attempt,  "23.167.245.41:443");
 
                 try
                 {
